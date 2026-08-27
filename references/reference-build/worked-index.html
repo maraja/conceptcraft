@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Task, Five Turns</title>
+<meta name="description" content="The agent loop with real work on it: follow an agent fixing a flaky test around the same engraved ring, station by station, from failing suite to earned exit.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232b3122'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23f2eee4' stroke-width='2'/><circle cx='16' cy='7' r='3' fill='%2397a06a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="scrollcraft.css">
+<style>
+  /* ------------------- AgenticAmit core, mapped onto the scrollcraft roles -- */
+  :root {
+    --sc-canvas:      #2b3122;   /* olive ground            */
+    --sc-surface:     #232919;   /* deeper olive            */
+    --sc-ink:         #f2eee4;   /* paper                   */
+    --sc-ink-soft:    #cfc7b2;   /* muted                   */
+    --sc-accent:      #b07a54;   /* clay: attention, scarce */
+    --sc-accent-ink:  #f7f4ec;
+    --sc-font-display: "Space Grotesk", system-ui, sans-serif;
+    --sc-font-text:    "Inter", system-ui, sans-serif;
+    --sc-font-mono:    "Space Mono", ui-monospace, monospace;
+    --sc-shadow-color: 80 18% 6%;
+
+    --gold:  #d2a24a;   /* marker band, selection, current */
+    --sage:  #97a06a;   /* verified, output, done          */
+    --clay:  #b07a54;
+    --paper: #f2eee4;
+    --inkk:  #23241e;   /* ink on paper surfaces           */
+
+    /* engraving inks */
+    --e-grid:   rgba(242, 238, 228, 0.055);
+    --e-gridx:  rgba(242, 238, 228, 0.11);
+    --e-line:   rgba(242, 238, 228, 0.85);
+    --e-faint:  rgba(207, 199, 178, 0.55);
+    --e-ghost:  rgba(207, 199, 178, 0.38);
+    --e-ring:   #cfc7b2;
+    --e-done:   rgba(176, 122, 84, 0.55);
+  }
+  html { scroll-behavior: auto; }
+  body { background: var(--sc-canvas); }
+  ::selection { background: var(--clay); color: var(--sc-accent-ink); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .smallcaps {
+    font-family: var(--sc-font-mono);
+    font-size: var(--sc-t-xs);
+    letter-spacing: var(--sc-track-wide);
+    text-transform: uppercase;
+  }
+
+  /* --------------------------------------------------------- the one act -- */
+  .loop-main { overflow: visible; }
+  .loop, .loop .sc-stage, .loop [data-sc-stage] { background: var(--sc-canvas); }
+  .stage-sheet, .overlay {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .overlay { pointer-events: none; z-index: 12; }
+
+  /* engraving vocabulary: strokes are screen-true, mask paths are not */
+  .stage-sheet path, .stage-sheet line, .stage-sheet circle, .stage-sheet rect {
+    vector-effect: non-scaling-stroke;
+  }
+  .stage-sheet mask path, .stage-sheet mask circle { vector-effect: none; }
+
+  .e-grid line  { stroke: var(--e-grid); stroke-width: 1; }
+  .e-gridx line { stroke: var(--e-gridx); stroke-width: 1; }
+  .e-frame { fill: none; stroke: var(--e-faint); stroke-width: 1; }
+  .e-crop  { stroke: var(--e-faint); stroke-width: 1.2; }
+  .e-ringguide { fill: none; stroke: var(--e-ghost); stroke-width: 1; }
+  .e-tick { stroke: var(--e-faint); stroke-width: 1.4; }
+  .e-chev { fill: none; stroke: var(--e-faint); stroke-width: 1.6; }
+  .e-arc  { fill: none; stroke: var(--e-line); stroke-width: 3; stroke-linecap: butt;
+    transition: stroke 400ms var(--sc-ease-out); }
+  .e-arc.e-passed { stroke: var(--e-done); }
+  .e-exit { fill: none; stroke: var(--sage); stroke-width: 3; }
+  .e-trail { fill: none; stroke-width: 2; }
+  /* two-state stations: at rest a sage mark that blends with the sheet;
+     the focused one overlays in full paper */
+  .e-station-rest { fill: var(--sc-canvas); stroke: rgba(151, 160, 106, 0.55); stroke-width: 2.2; }
+  .e-station { fill: var(--sc-canvas); stroke: var(--e-line); stroke-width: 2.2; }
+  .e-station-core { fill: var(--e-ring); }
+  .e-halo { fill: none; stroke: var(--clay); stroke-width: 2; }
+  .e-int line, .e-int path, .e-int rect, .e-int circle {
+    stroke: var(--e-faint); fill: none; stroke-width: 1.6;
+  }
+  .e-int .fill { fill: rgba(207, 199, 178, 0.14); stroke: var(--e-faint); }
+  .e-hatch line { stroke: var(--e-faint); stroke-width: 1.2; }
+  .e-gate { stroke: var(--e-line); stroke-width: 2.2; fill: none; }
+  .e-gate--armed { stroke: var(--sage); }
+  .e-term { fill: none; stroke: var(--sage); stroke-width: 2.2; }
+
+  .e-drawmask {
+    /* butt caps: a round cap pre-paints a dot at the dash boundary */
+    stroke: #fff; fill: none; stroke-linecap: butt; stroke-linejoin: round;
+    stroke-width: 8;
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - clamp(0, (var(--sc-p, 0) - var(--f0, 0)) / var(--fw, 1), 1));
+  }
+
+  /* labels counter-scale against the camera via one variable; every label
+     carries an olive halo so ring lines never cut through the letterforms */
+  .stage-sheet text {
+    font-family: var(--sc-font-mono);
+    font-size: calc(var(--fs, 10) * var(--inv, 1) * 1px);
+    letter-spacing: 0.06em;
+    fill: var(--sc-ink-soft);
+    paint-order: stroke;
+    stroke: rgba(43, 49, 34, 0.9);
+    stroke-width: 0.32em;
+    stroke-linejoin: round;
+  }
+  /* plates composite as one layer so overlapping platforms never double-darken */
+  .e-plates { opacity: 0.6; }
+  .e-plate {
+    fill: #191d10;
+    stroke: rgba(207, 199, 178, 0.3);
+    stroke-width: 1;
+  }
+  .stage-sheet text.t-name { fill: var(--sc-ink); font-weight: 700; letter-spacing: 0.1em; }
+  .stage-sheet text.t-plain { fill: var(--e-faint); letter-spacing: 0.04em; }
+  .stage-sheet text.t-note { fill: var(--e-faint); }
+  .stage-sheet text.t-center { fill: var(--sc-ink); font-weight: 700; letter-spacing: 0.18em; text-anchor: middle;
+    transition: opacity 350ms var(--sc-ease-out); }
+  .stage-sheet text.t-center-sub { fill: var(--e-faint); text-anchor: middle; letter-spacing: 0.12em; }
+  .stage-sheet text.t-fixed {
+    /* drawing furniture: part of the sheet, scales with it */
+    font-size: 11px; fill: var(--e-faint);
+  }
+  .stage-sheet .titleblock rect { fill: rgba(35, 41, 25, 0.5); stroke: var(--e-faint); stroke-width: 1; }
+  .stage-sheet .titleblock line { stroke: var(--e-faint); stroke-width: 1; }
+
+  .e-token { fill: var(--clay); stroke: var(--sc-canvas); }
+
+  /* leader lines + station highlight, drawn in screen space */
+  .overlay line { stroke: var(--clay); stroke-width: 1.4; }
+  .overlay circle.pinhalo { fill: none; stroke: var(--clay); stroke-width: 1.8; }
+
+  /* ------------------------------------------------------------ the cards -- */
+  .card {
+    position: absolute;
+    z-index: 20;
+    width: min(27.5rem, calc(100vw - 2 * var(--sc-gutter)));
+    background: var(--paper);
+    color: var(--inkk);
+    border: 1px solid rgba(35, 36, 30, 0.5);
+    box-shadow: var(--sc-e2);
+    padding: clamp(0.9rem, 1.6vw, 1.3rem) clamp(1rem, 1.8vw, 1.45rem);
+  }
+  .card--left  { left: clamp(1rem, 4vw, 4rem); bottom: clamp(4.5rem, 11vh, 7.5rem); }
+  .card--right { right: clamp(1rem, 4vw, 4rem); bottom: clamp(4.5rem, 11vh, 7.5rem); }
+  .card__head {
+    display: flex; align-items: baseline; gap: var(--sc-3);
+    font-family: var(--sc-font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.62);
+  }
+  .card__no { color: var(--clay); font-weight: 700; }
+  .card__ctx { margin-left: auto; text-transform: none; }
+  .card h2 {
+    margin: var(--sc-2) 0 0;
+    font-family: var(--sc-font-display);
+    font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .card__plain {
+    margin: var(--sc-3) 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: rgba(35, 36, 30, 0.85);
+    text-wrap: pretty;
+  }
+  /* the artifact caption: says what the panel below actually is */
+  .card__cap {
+    margin: var(--sc-3) 0 0;
+    font-family: var(--sc-font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55);
+  }
+  .card__cap b { color: var(--clay); font-weight: 700; }
+  .card__code {
+    margin: var(--sc-3) 0 0;
+    background: var(--inkk);
+    color: var(--paper);
+    font-family: var(--sc-font-mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    padding: 0.8rem 0.95rem;
+    overflow-x: auto;
+  }
+  .card__cap + .card__code { margin-top: 0.35rem; }
+  .card__code code { display: block; white-space: normal; }
+  .card__code .ln { white-space: pre; }
+  .card__code .ln { display: block; padding-inline: 0.3rem; margin-inline: -0.3rem;
+    transition: background 300ms var(--sc-ease-out), color 300ms var(--sc-ease-out); }
+  .card__code .ln.lit { background: var(--gold); color: var(--inkk); }
+  .card__code .ln.lit .c { color: rgba(35, 36, 30, 0.66); }
+  .card__code .ln.lit .k, .card__code .ln.lit .s,
+  .card__code .ln.lit .n, .card__code .ln.lit .f { color: var(--inkk); }
+  .card__code .k { color: var(--gold); }
+  .card__code .f { color: var(--paper); font-weight: 700; }
+  .card__code .s { color: #a9b47c; }
+  .card__code .n { color: #a9b47c; }
+  .card__code .c { color: rgba(207, 199, 178, 0.62); font-style: italic; }
+  .card__code .bad { color: #c98d63; font-weight: 700; }
+  .card__code .ln.lit .bad { color: var(--inkk); }
+  .card__tip {
+    margin: var(--sc-3) 0 0;
+    padding-top: var(--sc-3);
+    border-top: 1px solid rgba(35, 36, 30, 0.16);
+    font-family: var(--sc-font-mono);
+    font-size: 0.68rem;
+    line-height: 1.55;
+    color: rgba(35, 36, 30, 0.62);
+    text-wrap: pretty;
+  }
+
+  /* the live todo list inside the laps card */
+  .todos { list-style: none; margin: var(--sc-3) 0 0; padding: 0;
+    font-family: var(--sc-font-mono); font-size: 0.72rem; }
+  .todos li { display: flex; gap: 0.6rem; padding-block: 0.24rem; align-items: baseline;
+    color: rgba(35, 36, 30, 0.5); transition: color 300ms var(--sc-ease-out); }
+  .todos li + li { border-top: 1px solid rgba(35, 36, 30, 0.1); }
+  .todos li b { font-weight: 700; width: 1.1em; flex: none; }
+  .todos li[data-state="open"] b::before { content: "·"; }
+  .todos li[data-state="done"] { color: var(--inkk); }
+  .todos li[data-state="done"] b { color: #6c7547; }
+  .todos li[data-state="done"] b::before { content: "✓"; }
+  .todos li[data-state="fail"] { color: var(--inkk); }
+  .todos li[data-state="fail"] b { color: #96552e; }
+  .todos li[data-state="fail"] b::before { content: "✗"; }
+  .todos li .turntag { margin-left: auto; font-size: 0.62rem; color: rgba(35, 36, 30, 0.45); }
+
+  /* title + breath + colophon: type straight on the olive, no panel */
+  .card--bare {
+    background: transparent; border: 0; box-shadow: none; padding: 0;
+    color: var(--sc-ink);
+  }
+  .card--title {
+    width: min(40rem, calc(100vw - 2 * var(--sc-gutter)));
+    left: clamp(1.25rem, 5vw, 5.5rem); bottom: auto; top: clamp(4.5rem, 13vh, 8.5rem);
+    /* a soft scrim so the copy never fights the grid and frame lines */
+    padding: 1.5rem 4.5rem 1.8rem 1.7rem;
+    margin-left: -1.7rem;
+    border-radius: 10px;
+    background: linear-gradient(100deg,
+      rgba(32, 37, 23, 0.95) 0%,
+      rgba(32, 37, 23, 0.85) 55%,
+      rgba(32, 37, 23, 0) 96%);
+  }
+  .card--title .smallcaps { color: var(--sc-ink-soft); }
+  .card--title h1 {
+    margin: var(--sc-3) 0 0;
+    font-family: var(--sc-font-display);
+    font-size: clamp(2.5rem, 1.5rem + 4.6vw, 5.2rem);
+    font-weight: 600;
+    line-height: 0.98;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .card--title p:not(.smallcaps) {
+    margin: var(--sc-4) 0 0; max-width: 36em;
+    font-size: var(--sc-t-lg); line-height: 1.5;
+    color: var(--sc-ink); text-wrap: pretty;
+  }
+  .card--breath {
+    width: min(30rem, calc(100vw - 2 * var(--sc-gutter)));
+    left: 50%; translate: -50% 0; bottom: clamp(5rem, 13vh, 8.5rem);
+    text-align: center;
+  }
+  .card--breath p {
+    margin: 0;
+    font-family: var(--sc-font-display);
+    font-size: clamp(1.3rem, 1.1rem + 1.2vw, 1.9rem);
+    font-weight: 500; line-height: 1.25; text-wrap: balance;
+  }
+  .card--breath .smallcaps { display: block; margin-top: var(--sc-3); color: var(--sc-ink-soft); }
+  .card--colophon {
+    width: min(36rem, calc(100vw - 2 * var(--sc-gutter)));
+    left: clamp(1.25rem, 5vw, 5.5rem); bottom: clamp(5rem, 13vh, 8.5rem);
+    padding: 1.4rem 4.5rem 1.6rem 1.7rem;
+    margin-left: -1.7rem;
+    border-radius: 10px;
+    background: linear-gradient(100deg,
+      rgba(32, 37, 23, 0.95) 0%,
+      rgba(32, 37, 23, 0.85) 55%,
+      rgba(32, 37, 23, 0) 96%);
+  }
+  .card--colophon h2 {
+    margin: var(--sc-2) 0 0;
+    font-family: var(--sc-font-display);
+    font-size: clamp(1.7rem, 1.3rem + 1.8vw, 2.6rem);
+    font-weight: 600; line-height: 1.05; letter-spacing: -0.01em;
+  }
+  .card--colophon p { margin: var(--sc-3) 0 0; max-width: 44em; font-size: 0.92rem;
+    line-height: 1.55; color: var(--sc-ink-soft); text-wrap: pretty; }
+  .card--colophon p b { color: var(--sc-ink); font-weight: 600; }
+  .card--colophon .smallcaps { color: var(--sc-ink-soft); }
+
+  /* ---------------------------------------------------------------- chrome -- */
+  .mast {
+    position: fixed; z-index: 30;
+    top: clamp(0.8rem, 2vh, 1.4rem); left: var(--sc-gutter);
+    font-family: var(--sc-font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sc-ink);
+  }
+  .mast i { font-style: normal; color: var(--clay); }
+  .mast small {
+    display: block; margin-top: 0.25rem;
+    font-size: 0.64rem; letter-spacing: 0.06em;
+    text-transform: none;
+    color: var(--sc-ink-soft);
+  }
+
+  /* the context window: a live meter that fills as the loop works */
+  .hud {
+    position: fixed; z-index: 30;
+    top: clamp(0.8rem, 2vh, 1.4rem); right: var(--sc-gutter);
+    font-family: var(--sc-font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--sc-ink-soft);
+    background: rgba(35, 41, 25, 0.8);
+    border: 1px solid rgba(207, 199, 178, 0.28);
+    padding: 0.55rem 0.7rem 0.6rem;
+    width: 14rem;
+  }
+  .hud__label {
+    margin: 0 0 0.45rem; display: flex; justify-content: space-between; gap: 0.6rem;
+    text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.6rem;
+    color: var(--sc-ink);
+  }
+  .hud__label span { color: rgba(207, 199, 178, 0.6); }
+  .hud__bar {
+    position: relative; height: 13px;
+    border: 1px solid rgba(207, 199, 178, 0.4);
+    display: flex; align-items: stretch;
+    background: rgba(35, 36, 30, 0.65);
+  }
+  .hud__bar i { display: block; height: 100%; width: 0; }
+  .hud__bar .seg-sys   { background: rgba(207, 199, 178, 0.45); }
+  .hud__bar .seg-sum   { background: var(--gold); }
+  .hud__bar .seg-know  { background: rgba(242, 238, 228, 0.85); }
+  .hud__bar .seg-reply { background: var(--clay); }
+  .hud__bar .seg-obs   { background: var(--sage); }
+  .hud__tick {
+    position: absolute; top: -4px; bottom: -4px; width: 0;
+    border-left: 1px dashed rgba(210, 162, 74, 0.85);
+    left: 80%;   /* 64k budget on a 0..80k scale */
+  }
+  .hud__row {
+    margin: 0.45rem 0 0; display: flex; justify-content: space-between; gap: 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .hud__row #hud-ctx { color: var(--sc-ink); }
+  .hud__row #hud-verify.v-fail { color: var(--clay); }
+  .hud__row #hud-verify.v-pass { color: var(--sage); }
+
+  /* the station strip: the program listing, bottom-center, clear of the cards */
+  .stack {
+    position: fixed; z-index: 30;
+    left: 50%; translate: -50% 0;
+    bottom: clamp(0.6rem, 1.6vh, 1.1rem);
+    display: flex; gap: 2px;
+    background: rgba(35, 41, 25, 0.88);
+    border: 1px solid rgba(207, 199, 178, 0.28);
+    padding: 0.18rem 0.35rem;
+    font-family: var(--sc-font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    max-width: calc(100vw - 1.2rem);
+  }
+  .stack button {
+    appearance: none; border: 0; background: none; cursor: pointer;
+    display: flex; align-items: center; gap: 0.35rem;
+    padding: 0.32rem 0.45rem;
+    color: var(--sc-ink-soft);
+    text-transform: uppercase;
+  }
+  .stack button[aria-current="true"] {
+    color: var(--inkk);
+    background:
+      linear-gradient(178deg, transparent 0 5%, rgba(210, 162, 74, 0.85) 6% 94%, transparent 95% 100%);
+  }
+  .stack button:hover { color: var(--sc-ink); }
+
+  /* ---------------------------------------------------------------- mobile -- */
+  @media (max-width: 860px) {
+    .card--left, .card--right {
+      left: 50%; right: auto; translate: -50% 0;
+      bottom: clamp(3.6rem, 8vh, 5rem);
+      width: min(24rem, calc(100vw - 1.6rem));
+      padding: 0.8rem 0.95rem;
+    }
+    .card__plain { font-size: 0.82rem; }
+    .card__code { font-size: 0.72rem; }
+    .card--title { top: clamp(3.4rem, 10vh, 6rem); left: 50%; translate: -50% 0; width: calc(100vw - 1.6rem);
+      background: rgba(43, 49, 34, 0.86); padding: 0.9rem 0.95rem; }
+    .card--breath, .card--colophon { bottom: clamp(3.6rem, 8vh, 5rem); }
+    .card--colophon { left: 50%; translate: -50% 0; width: calc(100vw - 1.6rem);
+      margin-left: 0; background: rgba(43, 49, 34, 0.88); padding: 0.9rem 0.95rem 1rem; }
+    .hud { width: 10rem; padding: 0.4rem 0.5rem 0.45rem; }
+    .hud__label span { display: none; }
+    .hud__row { font-size: 0.58rem; }
+    .mast { max-width: calc(100vw - 12.5rem); font-size: 0.6rem; }
+    .stack { padding: 0.1rem 0.3rem; }
+    .stack button { padding: 0.55rem 0.28rem; min-height: 44px; }
+    .stack button span.lab { display: none; }
+    .mast small { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .e-drawmask { stroke-dashoffset: 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sr-only" aria-label="Stations">
+  <p>This page is one continuous engineering drawing of an AI agent's loop.
+    Each scroll step zooms into one station of the loop and shows its code.
+    Use the station list to jump to a station.</p>
+</nav>
+
+<header class="mast" aria-label="Page state">
+  <span>AGENTICAMIT <i>//</i> LOOP ENGINEERING · WORKED</span>
+  <small id="mast-state">the same machine, given a real job</small>
+</header>
+
+<aside class="hud" aria-hidden="true">
+  <p class="hud__label">Context window <span>64k budget</span></p>
+  <div class="hud__bar">
+    <i class="seg-sys" id="seg-sys"></i><i class="seg-sum" id="seg-sum"></i><i class="seg-know" id="seg-know"></i><i class="seg-reply" id="seg-reply"></i><i class="seg-obs" id="seg-obs"></i>
+    <b class="hud__tick"></b>
+  </div>
+  <p class="hud__row"><span id="hud-turn">turn 01</span><span id="hud-ctx">8k</span><span id="hud-verify">·</span></p>
+</aside>
+
+<nav class="stack" id="stack" aria-label="Station navigation"></nav>
+
+<main class="loop-main">
+  <section class="loop" data-sc-act="pin" data-sc-span="14" id="loop">
+    <div data-sc-stage>
+      <svg class="stage-sheet" id="stage-sheet" aria-hidden="true"></svg>
+      <svg class="overlay" id="overlay" aria-hidden="true"></svg>
+
+      <!-- p = 0: the title, over the whole sheet -->
+      <div class="card card--bare card--title" data-sc-cue="0 0.048 0 0.35">
+        <p class="smallcaps">AgenticAmit // worked example // sheet 2 of 2</p>
+        <h1>One task, five turns.</h1>
+        <p>Same ring as the schematic, now with real work on it: an agent
+          fixing a flaky test, start to finish. Nothing on the ring is clever.
+          Scroll, and see why it doesn't need to be.</p>
+      </div>
+
+      <!-- Station 01 · ingest -->
+      <article class="card card--right" data-region="s1" data-anchor="st0" data-sc-cue="0.058 0.112 0.14 0.18" aria-label="Station 1: ingest">
+        <p class="card__head"><span class="card__no">Stage 01</span><span>// ingest</span><span class="card__ctx">turn 01 · step 1 of 6</span></p>
+        <h2>It packed light, on purpose.</h2>
+        <p class="card__plain">Out of the whole repo: two files, one memory,
+          three tools. Everything else stayed outside the window.</p>
+        <p class="card__cap">▸ <b>the packing list</b>, verbatim</p>
+        <pre class="card__code" data-hl-a="2 3" data-hl-b="4 5"><code><span class="ln"><span class="k">task</span>    <span class="f">fix the flaky retry test</span></span>
+<span class="ln"><span class="k">files</span>   src/retry.py         <span class="n">1.2k</span></span>
+<span class="ln">        tests/test_retry.py  <span class="n">0.8k</span></span>
+<span class="ln"><span class="k">memory</span>  <span class="s">"flaked 3x this week,</span></span>
+<span class="ln">        <span class="s"> always on slow CI"</span></span>
+<span class="ln"><span class="k">tools</span>   run_tests · read_file · edit_file</span></code></pre>
+        <p class="card__tip">// the skill here was leaving the rest of the
+          repo out.</p>
+      </article>
+
+      <!-- Station 02 · assemble -->
+      <article class="card card--left" data-region="s2" data-anchor="st1" data-sc-cue="0.122 0.176 0.14 0.18" aria-label="Station 2: assemble">
+        <p class="card__head"><span class="card__no">Stage 02</span><span>// assemble</span><span class="card__ctx">step 2 of 6</span></p>
+        <h2>The window, itemized.</h2>
+        <p class="card__plain">This is the entire world the model will see this
+          turn. Rules first, the ask last: recency is weight.</p>
+        <p class="card__cap">▸ <b>the assembled window</b>, block by block</p>
+        <pre class="card__code" data-hl-a="1 1" data-hl-b="4 4"><code><span class="ln"><span class="k">[system]</span>     <span class="n">8.0k</span>  rules + tool schemas</span>
+<span class="ln"><span class="k">[history]</span>    <span class="n">0.0k</span>  <span class="c">first turn, empty</span></span>
+<span class="ln"><span class="k">[knowledge]</span>  <span class="n">8.9k</span>  both files + the memory</span>
+<span class="ln"><span class="k">[ask]</span>        <span class="n">0.1k</span>  <span class="s">"fix the flaky retry test"</span></span>
+<span class="ln">─────────────────────────────</span>
+<span class="ln"><span class="k">window</span>      <span class="n">17.0k</span> of 64k</span></code></pre>
+        <p class="card__tip">// prompt = f(context). Can't diff it, can't debug it.</p>
+      </article>
+
+      <!-- Station 03 · model call -->
+      <article class="card card--left" data-region="s3" data-anchor="st2" data-sc-cue="0.188 0.246 0.14 0.18" aria-label="Station 3: model call">
+        <p class="card__head"><span class="card__no">Stage 03</span><span>// model call</span><span class="card__ctx">step 3 of 6</span></p>
+        <h2>It talked, then it asked.</h2>
+        <p class="card__plain">The reply is just tokens: a thought, and a
+          request. Note what it did not do: guess at a fix.</p>
+        <p class="card__cap">▸ <b>the reply</b>, raw blocks, nothing run yet</p>
+        <pre class="card__code" data-hl-a="1 4" data-hl-b="5 6"><code><span class="ln"><span class="k">text</span>  <span class="s">"The failure is timing-shaped:</span></span>
+<span class="ln">      <span class="s"> test_backoff asserts elapsed</span></span>
+<span class="ln">      <span class="s"> &lt; 0.3s. Reproducing it before</span></span>
+<span class="ln">      <span class="s"> touching anything."</span></span>
+<span class="ln"><span class="k">tool_call</span>  <span class="f">run_tests</span>(</span>
+<span class="ln">    path=<span class="s">"tests/test_retry.py"</span>)</span></code></pre>
+        <p class="card__tip">// a tool call is a sentence until something
+          executes it.</p>
+      </article>
+
+      <!-- Station 04 · parse & route -->
+      <article class="card card--left" data-region="s4" data-anchor="st3" data-sc-cue="0.257 0.311 0.14 0.18" aria-label="Station 4: parse and route">
+        <p class="card__head"><span class="card__no">Stage 04</span><span>// parse &amp; route</span><span class="card__ctx">step 4 of 6</span></p>
+        <h2>Two blocks, two lanes.</h2>
+        <p class="card__plain">The parser doesn't understand the plan. It only
+          sorts blocks: words to the transcript, calls to the sandbox.</p>
+        <p class="card__cap">▸ <b>the routing table</b> for those two blocks</p>
+        <pre class="card__code" data-hl-a="1 2" data-hl-b="3 4"><code><span class="ln"><span class="k">block 1</span>  text       → <span class="f">say it</span></span>
+<span class="ln"><span class="k">block 2</span>  tool_call  → <span class="f">run_tests</span></span>
+<span class="ln"><span class="k">routed</span>    1 say · 1 call</span>
+<span class="ln"><span class="k">malformed</span> <span class="n">0</span>  <span class="c">// errors go back around</span></span></code></pre>
+        <p class="card__tip">// on a bad turn, "malformed" is the row that
+          saves the crash.</p>
+      </article>
+
+      <!-- Station 05 · execute + observe -->
+      <article class="card card--right" data-region="s5" data-anchor="st4" data-sc-cue="0.322 0.381 0.14 0.18" aria-label="Station 5: execute and observe">
+        <p class="card__head"><span class="card__no">Stage 05</span><span>// execute + observe</span></p>
+        <h2>There's the flake, red-handed.</h2>
+        <p class="card__plain">The agent didn't theorize. It ran the suite inside
+          the wall and watched: 0.312 seconds against a 0.3 limit.</p>
+        <p class="card__cap">▸ <b>the sandbox terminal</b>, exactly as observed</p>
+        <pre class="card__code" data-hl-a="3 4" data-hl-b="5 5"><code><span class="ln"><span class="c">$</span> pytest tests/test_retry.py -q</span>
+<span class="ln">....F</span>
+<span class="ln"><span class="bad">FAILED</span> test_backoff_under_300ms</span>
+<span class="ln">  <span class="bad">AssertionError: 0.312 &gt;= 0.3</span></span>
+<span class="ln"><span class="n">1 failed, 4 passed</span> in 2.41s</span></code></pre>
+        <p class="card__tip">// an observation beats a theory. Every turn.</p>
+      </article>
+
+      <!-- Station 06 · compact + verify -->
+      <article class="card card--right" data-region="s6" data-anchor="st5" data-sc-cue="0.392 0.451 0.14 0.18" aria-label="Station 6: compact and verify">
+        <p class="card__head"><span class="card__no">Stage 06</span><span>// compact + verify</span></p>
+        <h2>Keep the lesson, drop the log.</h2>
+        <p class="card__plain">Four kilobytes of test output became one sentence.
+          The checklist moved by exactly one line.</p>
+        <p class="card__cap">▸ <b>the state diff</b>: kept vs dropped</p>
+        <pre class="card__code" data-hl-a="1 2" data-hl-b="4 5"><code><span class="ln"><span class="s">+ "repro: jitter can push backoff</span></span>
+<span class="ln"><span class="s">   past the 0.3s assert"</span></span>
+<span class="ln"><span class="bad">- 4.1k</span> of raw pytest output</span>
+<span class="ln"><span class="k">todos</span>  <span class="s">✓ reproduce the failure</span></span>
+<span class="ln">       · locate the cause  <span class="c">// next</span></span></code></pre>
+        <p class="card__tip">// compaction is lossy on purpose. What survives is a
+          design decision.</p>
+      </article>
+
+      <!-- The gate -->
+      <article class="card card--right" data-region="gate" data-anchor="gate" data-sc-cue="0.462 0.516 0.14 0.18" aria-label="The gate">
+        <p class="card__head"><span class="card__no">The gate</span><span>// continue or exit</span><span class="card__ctx">end of turn 01</span></p>
+        <h2>Not done. That's the design.</h2>
+        <p class="card__plain">One turn produced one verified fact. The gate
+          sends it around again, carrying everything it learned.</p>
+        <p class="card__cap">▸ <b>the gate</b>, evaluated on real state</p>
+        <pre class="card__code" data-hl-a="2 3" data-hl-b="4 4"><code><span class="ln"><span class="k">state.done()</span> ?</span>
+<span class="ln">  todos   <span class="n">1 of 5</span> complete</span>
+<span class="ln">  suite   <span class="bad">still red</span></span>
+<span class="ln">→ <span class="f">False</span> · around again</span></code></pre>
+        <p class="card__tip">// exit on verified todos, not on the model feeling done.</p>
+      </article>
+
+      <!-- The breath -->
+      <div class="card card--bare card--breath" data-sc-cue="0.524 0.558 0.2 0.25">
+        <p>That's one turn. One verified fact.</p>
+        <p class="smallcaps">four laps to green</p>
+      </div>
+
+      <!-- THE PEAK: the laps -->
+      <article class="card card--left" data-region="laps" data-anchor="token" data-sc-cue="0.568 0.756 0.06 0.09" aria-label="The loop runs">
+        <p class="card__head"><span class="card__no">Turns 02–05</span><span>// same ring, compounding</span></p>
+        <h2>Turn one took the whole page.</h2>
+        <p class="card__plain">The next four take one lap each, because every lap
+          starts with the last one's lesson already in the window.</p>
+        <ul class="todos" id="todos">
+          <li data-state="open"><b></b><span>reproduce the failure</span><span class="turntag" data-tag="t1">turn 01</span></li>
+          <li data-state="open"><b></b><span>locate the cause</span><span class="turntag" data-tag="t2">turn 02</span></li>
+          <li data-state="open"><b></b><span>write the patch</span><span class="turntag" data-tag="t3">turn 03</span></li>
+          <li data-state="open"><b></b><span>re-run the suite</span><span class="turntag" data-tag="t4f">turn 04</span></li>
+          <li data-state="open"><b></b><span>write it up</span><span class="turntag" data-tag="t5">turn 05</span></li>
+        </ul>
+        <p class="card__tip" id="laps-note">// the bad patch on turn 04 was caught
+          by the same gate you just watched say no.</p>
+      </article>
+
+      <!-- The exit -->
+      <article class="card card--right" data-region="exit" data-anchor="term" data-sc-cue="0.766 0.818 0.15 0.2" aria-label="The exit">
+        <p class="card__head"><span class="card__no">Return</span><span>// gate open</span><span class="card__ctx">5 turns · ctx 42k</span></p>
+        <h2>The answer, with receipts.</h2>
+        <p class="card__plain">A one-line fix, a green suite, a written summary.
+          Out through the gate, the only way there is.</p>
+        <p class="card__cap">▸ <b>the fix</b> and <b>the green run</b></p>
+        <pre class="card__code" data-hl-a="1 2" data-hl-b="3 3"><code><span class="ln"><span class="bad">- assert elapsed &lt; 0.3</span></span>
+<span class="ln"><span class="s">+ assert elapsed &lt; 0.3 + JITTER_CAP</span></span>
+<span class="ln"><span class="s">5 passed</span> in 2.38s ✓</span></code></pre>
+      </article>
+
+      <!-- colophon: holds -->
+      <div class="card card--bare card--colophon" data-sc-cue="0.828 1 0.18 0">
+        <p class="smallcaps">The drawing, re-inked</p>
+        <h2>Nothing was magic. That's the point.</h2>
+        <p>Every station did something a careful junior could do: pick two files,
+          order a window, run the tests, keep one lesson. <b>The intelligence is
+          in the lap, not the stop.</b> That is loop engineering, worked.</p>
+        <p>One Task, Five Turns · companion to the Loop Engineering schematic ·
+          an AgenticAmit engraving.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="scrollcraft.js"></script>
+<script src="loop.js"></script>
+</body>
+</html>
