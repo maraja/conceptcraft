@@ -1,0 +1,110 @@
+<meta charset="utf-8">
+<!-- FIELD GUIDE MODE panel kit. Open this file directly to see the vessels.
+     Scoped under .mode--fieldguide; drops into a build's index.html.
+     Material: taxonomies, comparisons, benchmarks, measured data.
+     This is also the mode other pages BORROW from for a single chart card. -->
+<style>
+  .demo { background: #2b3122; padding: 2rem; font-family: Inter, system-ui, sans-serif; }
+  .card { background: #f2eee4; max-width: 26rem; padding: 1.15rem 1.3rem 1.2rem;
+          border-radius: 2px; margin-bottom: 1.5rem; }
+
+  /* ---- the kit ---------------------------------------------------- */
+  .mode--fieldguide .card__cap,
+  .mode--archive .card__cap {
+    margin: var(--sc-3, 0.9rem) 0 0; font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55);
+  }
+  .mode--fieldguide .card__cap b { color: #8d5a36; font-weight: 700; }
+
+  /* A plate: numbered, framed, hairline. */
+  .plate {
+    position: relative; margin: 0.6rem 0 0; padding: 1.4rem 0.85rem 0.85rem;
+    border: 1px solid rgba(35, 36, 30, 0.22); border-radius: 2px;
+  }
+  .plate__no {
+    position: absolute; top: 0.45rem; left: 0.85rem;
+    font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55);
+  }
+
+  /* Engraved bar chart. Values print at the bar end, never on a gridline. */
+  .chart { width: 100%; display: block; }
+  .chart .axis { stroke: rgba(35, 36, 30, 0.35); stroke-width: 1; }
+  .chart .bar-a { fill: #97a06a; }
+  .chart .bar-b { fill: #b07a54; }
+  .chart text {
+    font-family: var(--sc-font-mono, "Space Mono", monospace); font-size: 9px;
+    fill: rgba(35, 36, 30, 0.75);
+  }
+  .chart text.val { font-weight: 700; fill: rgba(35, 36, 30, 0.92); }
+  .chart .lit-ring { fill: none; stroke: #d2a24a; stroke-width: 2; }
+
+  /* Specimen boxes: one subject per cell. */
+  .spec { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+          margin: 0.6rem 0 0; }
+  .spec > div {
+    border: 1px solid rgba(35, 36, 30, 0.18); border-radius: 2px;
+    padding: 0.55rem 0.5rem; text-align: center;
+  }
+  .spec .sym { font-size: 1.15rem; line-height: 1.4; color: rgba(35, 36, 30, 0.85); }
+  .spec .lbl {
+    font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.62); margin-top: 0.2rem;
+  }
+
+  .legend { display: flex; gap: 0.9rem; margin-top: 0.5rem; }
+  .legend span {
+    display: inline-flex; align-items: center; gap: 0.32rem;
+    font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.6rem; color: rgba(35, 36, 30, 0.66);
+  }
+  .legend i { width: 8px; height: 8px; display: inline-block; }
+
+  /* The figure caption doubles as the tip. */
+  .mode--fieldguide .card__tip {
+    margin: 0.8rem 0 0; font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.68rem; line-height: 1.5; color: rgba(35, 36, 30, 0.66);
+  }
+  .mode--fieldguide .card__tip b { color: rgba(35, 36, 30, 0.85); font-weight: 700; }
+</style>
+
+<div class="demo mode--fieldguide">
+  <div class="card">
+    <p class="card__cap">▸ <b>ILSVRC 2012</b>, top-5 error rate</p>
+    <div class="plate">
+      <span class="plate__no">fig. 3</span>
+      <svg class="chart" viewBox="0 0 240 74" role="img"
+           aria-label="AlexNet 15.3 percent versus runner-up 26.2 percent">
+        <line class="axis" x1="58" y1="6" x2="58" y2="62"/>
+        <line class="axis" x1="58" y1="62" x2="232" y2="62"/>
+        <text x="54" y="22" text-anchor="end">AlexNet</text>
+        <rect class="bar-a" x="59" y="13" width="86" height="12"/>
+        <text class="val" x="151" y="23">15.3%</text>
+        <circle class="lit-ring" cx="102" cy="19" r="0" />
+        <text x="54" y="46" text-anchor="end">runner-up</text>
+        <rect class="bar-b" x="59" y="37" width="147" height="12"/>
+        <text class="val" x="212" y="47">26.2%</text>
+        <text x="59" y="72">0%</text>
+        <text x="232" y="72" text-anchor="end">30%</text>
+      </svg>
+      <div class="legend">
+        <span><i style="background:#97a06a"></i>deep net</span>
+        <span><i style="background:#b07a54"></i>prior method</span>
+      </div>
+    </div>
+    <p class="card__tip"><b>fig. 3 —</b> one year, ten points of error gone. the method changed, not the effort.</p>
+  </div>
+
+  <div class="card">
+    <p class="card__cap">▸ <b>three ways</b> to hold knowledge</p>
+    <div class="spec">
+      <div><div class="sym">◇</div><div class="lbl">rules</div></div>
+      <div><div class="sym">▦</div><div class="lbl">weights</div></div>
+      <div><div class="sym">◉</div><div class="lbl">graph</div></div>
+    </div>
+    <p class="card__tip"><b>fig. 4 —</b> written by hand, learned from data, or linked with provenance.</p>
+  </div>
+</div>

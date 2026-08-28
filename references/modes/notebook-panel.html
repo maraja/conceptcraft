@@ -1,0 +1,93 @@
+<meta charset="utf-8">
+<!-- NOTEBOOK MODE panel kit. Open this file directly to see the vessels.
+     Scoped under .mode--notebook; drops into a build's index.html.
+     Material: math, theory, derivations, algorithms.
+
+     The handwriting face here is Caveat from Google Fonts (allowed by
+     the artifact CSP). If you own a handwriting typeface, embed its
+     REGULAR cut instead: regular cuts read far better at UI size than
+     bold ones. For presence, stroke it (see .hand-strong). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap">
+<style>
+
+  .demo { background: #2b3122; padding: 2rem; font-family: Inter, system-ui, sans-serif; }
+  .card { background: #f2eee4; max-width: 26rem; padding: 1.15rem 1.3rem 1.2rem;
+          border-radius: 2px; }
+
+  /* ---- the kit ---------------------------------------------------- */
+  .mode--notebook .card__cap {
+    margin: var(--sc-3, 0.9rem) 0 0; font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55);
+  }
+  .mode--notebook .card__cap b { color: #8d5a36; font-weight: 700; }
+
+  /* Ruled paper. LINE HEIGHT MUST EQUAL THE GRADIENT PERIOD (1.6rem here)
+     or the rules drift off the baselines a few lines down. */
+  .mode--notebook .nb {
+    --rule: 1.6rem;
+    position: relative; margin: 0.6rem 0 0; padding: 0.5rem 0 0.5rem 3.15rem;
+    background-image: repeating-linear-gradient(
+      to bottom, transparent 0, transparent calc(var(--rule) - 1px),
+      rgba(35, 36, 30, 0.10) calc(var(--rule) - 1px), rgba(35, 36, 30, 0.10) var(--rule));
+    background-position: 0 0.5rem;
+  }
+  .mode--notebook .nb::before {              /* the margin rule */
+    content: ""; position: absolute; left: 2.65rem; top: 0; bottom: 0;
+    border-left: 1px solid rgba(176, 122, 84, 0.45);
+  }
+  .mode--notebook .nb .step {
+    margin: 0; height: var(--rule); line-height: var(--rule);
+    font-size: 0.88rem; color: rgba(35, 36, 30, 0.9);
+  }
+  .mode--notebook .nb .step .m {
+    font-family: var(--sc-font-mono, "Space Mono", monospace); font-size: 0.84rem;
+  }
+
+  /* Margin annotations sit LEFT of the rule, in the hand. */
+  .mode--notebook .hand {
+    position: absolute; left: 0; width: 2.35rem; text-align: right;
+    font-family: "Caveat", "Segoe Print", cursive;
+    font-size: 0.82rem; line-height: 1.1; color: #8d5a36;
+    transform: rotate(-2deg); transform-origin: right center;
+  }
+  .mode--notebook .hand-strong { -webkit-text-stroke: 0.4px currentColor; }
+  .mode--notebook .note {                    /* a wider note under a step */
+    font-family: "Caveat", "Segoe Print", cursive;
+    font-size: 0.95rem; color: #8d5a36; transform: rotate(-0.6deg);
+    display: inline-block; margin-left: 0.4rem;
+  }
+  .mode--notebook .arrow { vertical-align: middle; margin-right: 0.2rem; }
+
+  /* The sweep is a pencil underline, not a filled row. */
+  .mode--notebook .step.lit .m,
+  .mode--notebook .step.lit span.u {
+    border-bottom: 2px solid rgba(210, 162, 74, 0.9);
+    padding-bottom: 1px;
+  }
+
+  .mode--notebook .card__tip {
+    margin: 0.85rem 0 0; padding-top: 0.6rem;
+    border-top: 1px solid rgba(35, 36, 30, 0.12);
+    font-family: "Caveat", "Segoe Print", cursive;
+    font-size: 1rem; line-height: 1.4; color: #8d5a36;
+  }
+</style>
+
+<div class="demo mode--notebook">
+  <div class="card">
+    <p class="card__cap">▸ <b>squared error</b>, one step at a time</p>
+    <div class="nb">
+      <p class="step"><span class="hand">start</span>take one prediction <span class="m">ŷ</span></p>
+      <p class="step">subtract the truth: <span class="m">y − ŷ</span></p>
+      <p class="step lit">square it: <span class="m">(y − ŷ)²</span>
+        <span class="note"><svg class="arrow" width="26" height="10" viewBox="0 0 26 10" fill="none"
+          stroke="#8d5a36" stroke-width="1.4" stroke-linecap="round"><path d="M25 5 C 16 1, 9 9, 1 5"/>
+          <path d="M1 5 l4 -2.4 M1 5 l4 2.6"/></svg>this is just distance!</span></p>
+      <p class="step">add them all: <span class="m">Σ (y − ŷ)²</span></p>
+    </div>
+    <p class="card__tip">squaring punishes big misses more than small ones. that is the whole trick.</p>
+  </div>
+</div>

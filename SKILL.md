@@ -94,6 +94,23 @@ builds. Violating one re-creates a failure that has already been paid for.
    umber #332d20 with clay-warmed inks ("the shop floor") for a production
    example. Pick the variant FROM the concept, shift only the ground, grid,
    and ink tint tokens, and re-run the contrast pass after.
+10. **The vessel matches the material.** Theme is colour; MODE is the
+    information-display language, and it is chosen from the TYPE of material
+    the page teaches, never inherited from the last build. Terminal (dark
+    well, mono lines, syntax colour, `//` tips) is for code, commands, logs
+    and system state. Archive (typeset excerpt on paper, clay rule, citation
+    line, highlighter sweep, `n.b.` tips) is for history, people and
+    documents. Notebook (ruled paper, worked steps, handwritten margin
+    annotations) is for math and derivations. Field Guide (numbered plates,
+    specimen boxes, engraved charts, `fig. N` captions) is for taxonomies,
+    comparisons and measured data. One dominant mode per page, declared as
+    `mode--<name>` on the act root; a single card may borrow one other
+    mode's panel when its own material demands it. The SHEET never changes:
+    mast, HUD, nav and engraving labels stay mono in every mode. This law
+    was earned by an AI-history page that shipped a 1973 government report
+    inside a syntax-coloured terminal well. A quotation is a document; it
+    should look like one. Spec and copy-paste kits: `references/MODES.md`
+    and `references/modes/`.
 
 ## Workflow
 
@@ -114,6 +131,12 @@ video, or a post, extract how the concept WORKS and teach that; a page that
 narrates the source's story arc is a book report, not an explainer. Source
 material supplies mechanics, real numbers, and credit lines — never the
 page's structure.
+
+Classify the material before you draw anything: is it code, history, math,
+or comparison? That answer picks the MODE (law 10) and therefore what every
+artifact panel will look like. Read `references/MODES.md` and copy the
+matching vessel from `references/modes/`. Choosing this late, after the cards
+are already written as terminal wells, is how a history page ships wrong.
 
 Draw the concept's TRUE topology, not the reference's ring: a cycle is a
 ring, a pipeline is a path, a hierarchy is a tree, a tradeoff is an axis, a
@@ -150,7 +173,8 @@ per-stop label placement), geometry constants and path construction, CAM
 boxes + keyframes, draw-on-scroll segment windows, token waypoints, the
 finale state functions, HUD segment waypoints, TODOS/checklist timings,
 REGIONS. In `index.html`: title, cards, breath, finale card, exit, colophon,
-mast. Progress map convention: title ~0.05, stops ~0.06–0.07 each, decision
+mast. Put `mode--<name>` on the act root and paste that mode's panel CSS
+from `references/modes/` once, near the card styles. Progress map convention: title ~0.05, stops ~0.06–0.07 each, decision
 point, breath (authored silence), finale ~0.20 (the largest span by far),
 resolution, colophon hold. Cue plateaus: `data-sc-cue="from to 0.14 0.18"`;
 only the last cue may be one-valued.
@@ -222,6 +246,10 @@ self-answered.
 - `references/MECHANICS.md` — every subsystem mapped: camera, counter-scaled
   labels, two-state focus, plates, spotlight, masks, HUD instrument, cards,
   nav, reduced motion. Read before touching `loop.js`.
+- `references/MODES.md` — the four presentation modes, how to pick one from
+  the material, and the rules that keep them a system. Read in workflow 1.
+- `references/modes/` — copy-paste panel kits: `archive-panel.html`,
+  `notebook-panel.html`, `fieldguide-panel.html`. Open any directly.
 - `references/GOTCHAS.md` — the debugging table. Every row cost real time in
   the reference builds; check it FIRST when something renders wrong.
 - `references/reference-build/` — the canonical files. `index.html`+`loop.js`

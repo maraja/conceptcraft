@@ -35,6 +35,8 @@ shipping.
 ```
 SKILL.md                     the format laws + workflow Claude follows
 references/MECHANICS.md      every subsystem, split MECHANICS vs AUTHORED
+references/MODES.md          the four presentation modes + how to pick one
+references/modes/            copy-paste panel kits, one per mode
 references/GOTCHAS.md        the debugging table (every row cost real time)
 references/reference-build/  two full reference pages (concept + worked example)
 engine/                      the scrollcraft runtime (vendored, never edited)
@@ -59,6 +61,25 @@ system it just taught — deterministically, as a pure function of scroll, with
 accumulating state and one caught failure — and what the run resolves stays
 lit through the close. Every frame of that is verified from screenshots
 before it ships.
+
+## Modes: the vessel matches the material
+
+A conceptcraft has two independent axes. **Theme** is colour temperature, so
+a series never looks identical. **Mode** is the information-display language,
+and it is chosen from the TYPE of material being taught:
+
+| Mode | Material | Panels look like |
+|---|---|---|
+| Terminal | code, commands, logs | dark well, mono lines, syntax colour |
+| Archive | history, people, documents | typeset excerpts, citations, highlighter |
+| Notebook | math, derivations | ruled paper, worked steps, margin notes |
+| Field Guide | comparisons, data | numbered plates, specimen boxes, charts |
+
+One dominant mode per page, declared as `mode--<name>` on the act root; a
+single card may borrow another mode's panel when its material calls for it.
+The engraved sheet, camera, and instrument never change. This exists because
+a history page once shipped a 1973 government report inside a syntax-coloured
+terminal well: a quotation is a document, and it should look like one.
 
 ## Topologies
 

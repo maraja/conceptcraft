@@ -1,0 +1,129 @@
+<meta charset="utf-8">
+<!-- ARCHIVE MODE panel kit. Open this file directly to see the vessels.
+     The <style> block is scoped under .mode--archive and drops into a
+     build's index.html unchanged. Material: history, people, documents. -->
+<style>
+  .demo { background: #1f2726; padding: 2rem; font-family: Inter, system-ui, sans-serif; }
+  .card { background: #f2eee4; max-width: 26rem; padding: 1.15rem 1.3rem 1.2rem;
+          border-radius: 2px; margin-bottom: 1.5rem; }
+
+  /* ---- the kit ---------------------------------------------------- */
+  .mode--archive .card__cap {
+    margin: var(--sc-3, 0.9rem) 0 0; font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55);
+  }
+  .mode--archive .card__cap b { color: #8d5a36; font-weight: 700; }
+
+  /* An excerpt is a quotation from a real document. */
+  .mode--archive .xrpt {
+    position: relative; margin: 0.55rem 0 0; padding: 0.15rem 0 0.15rem 0.95rem;
+    border-left: 2px solid rgba(176, 122, 84, 0.55);
+  }
+  .mode--archive .xrpt + .xrpt {
+    margin-top: 0.9rem; padding-top: 0.9rem;
+    border-top: 1px solid rgba(35, 36, 30, 0.12);
+  }
+  .mode--archive .xrpt::before {           /* oversized opening quote */
+    content: "\201C"; position: absolute; left: 0.28rem; top: -0.75rem;
+    font-family: var(--sc-font-display, "Space Grotesk", sans-serif);
+    font-size: 2.6rem; line-height: 1; color: rgba(176, 122, 84, 0.22);
+    pointer-events: none;
+  }
+  .mode--archive .xrpt q { quotes: none; display: block;
+    font-size: 0.95rem; line-height: 1.62; color: rgba(35, 36, 30, 0.92);
+    text-wrap: pretty; }
+  .mode--archive .xrpt cite {
+    display: block; margin-top: 0.5rem; font-style: normal;
+    font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.62);          /* small text: never lighter */
+  }
+
+  /* The highlighter sweep replaces terminal's lit row. Same JS, new paint:
+     the build toggles .lit on a <mark> exactly as it toggles .ln.lit. */
+  .mode--archive mark {
+    background: linear-gradient(90deg,
+      rgba(210, 162, 74, 0) 0%, rgba(210, 162, 74, 0.55) 3%,
+      rgba(210, 162, 74, 0.55) 97%, rgba(210, 162, 74, 0) 100%);
+    color: inherit; padding: 0.06em 0.15em; border-radius: 1px;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .mode--archive mark.off { background: none; }
+
+  /* An exhibit list: dated items on the same paper. */
+  .mode--archive .exh { margin: 0.55rem 0 0; padding: 0; list-style: none; }
+  .mode--archive .exh li {
+    display: flex; gap: 0.7rem; align-items: baseline;
+    padding: 0.4rem 0; border-top: 1px solid rgba(35, 36, 30, 0.1);
+    font-size: 0.88rem; line-height: 1.45; color: rgba(35, 36, 30, 0.9);
+  }
+  .mode--archive .exh li:first-child { border-top: 0; }
+  .mode--archive .exh .yr {
+    flex: 0 0 2.6rem; font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.7rem; color: rgba(35, 36, 30, 0.6);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A ledger table: rows of readings, not shell output. */
+  .mode--archive .lgr { width: 100%; border-collapse: collapse; margin-top: 0.55rem; }
+  .mode--archive .lgr th, .mode--archive .lgr td {
+    text-align: left; padding: 0.34rem 0.5rem 0.34rem 0;
+    font-family: var(--sc-font-mono, "Space Mono", monospace);
+    font-size: 0.72rem; font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid rgba(35, 36, 30, 0.1);
+  }
+  .mode--archive .lgr th {
+    font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(35, 36, 30, 0.55); border-bottom-color: rgba(35, 36, 30, 0.25);
+  }
+  .mode--archive .lgr td { color: rgba(35, 36, 30, 0.88); }
+  .mode--archive .lgr tr.lit td { background: rgba(210, 162, 74, 0.4); }
+  .mode--archive .lgr .warn { color: #8d5a36; font-weight: 700; }
+
+  /* The tip is a footnote, not a comment. */
+  .mode--archive .card__tip {
+    margin: 0.85rem 0 0; padding-top: 0.6rem;
+    border-top: 1px solid rgba(35, 36, 30, 0.12);
+    font-size: 0.78rem; font-style: italic; line-height: 1.5;
+    color: rgba(35, 36, 30, 0.7);
+  }
+  .mode--archive .card__tip b {
+    font-style: normal; font-weight: 700; color: rgba(35, 36, 30, 0.8);
+  }
+</style>
+
+<div class="demo mode--archive">
+  <div class="card">
+    <p class="card__cap">▸ <b>the Lighthill Report</b>, 1973</p>
+    <div class="xrpt">
+      <q>In no part of the field have the discoveries made so far produced
+        <mark>the major impact that was then promised</mark>.</q>
+      <cite>Lighthill Report · UK Science Research Council · 1973</cite>
+    </div>
+    <p class="card__tip"><b>n.b.</b> the results did not fall. the promise did.</p>
+  </div>
+
+  <div class="card">
+    <p class="card__cap">▸ <b>the second boom</b>, item by item</p>
+    <ul class="exh">
+      <li><span class="yr">1978</span><span>R1/XCON configures VAX orders at DEC</span></li>
+      <li><span class="yr">1982</span><span>Japan's MITI funds the Fifth Generation project</span></li>
+      <li><span class="yr">1986</span><span>XCON saving DEC about $25M a year</span></li>
+    </ul>
+    <p class="card__tip"><b>n.b.</b> this one really worked. that is what made the fall a surprise.</p>
+  </div>
+
+  <div class="card">
+    <p class="card__cap">▸ <b>the gauge</b>, read three times (illustrative index)</p>
+    <table class="lgr">
+      <thead><tr><th>year</th><th>promise</th><th>delivered</th><th>gap</th></tr></thead>
+      <tbody>
+        <tr><td>1970</td><td>72</td><td>16</td><td class="warn">4.5×</td></tr>
+        <tr><td>1986</td><td>80</td><td>26</td><td class="warn">3.1×</td></tr>
+        <tr class="lit"><td>now</td><td>96</td><td>78</td><td>1.2×</td></tr>
+      </tbody>
+    </table>
+    <p class="card__tip"><b>n.b.</b> one number tells you which era you are standing in.</p>
+  </div>
+</div>
