@@ -121,7 +121,10 @@ protocol is two columns exchanging, a shared-memory system is a hub with its
 operations cycling around it. The 1600×1000 sheet, stops placed on the
 shape, one special decision point (the reference loop has "the gate"), and
 one terminal where the resolved thing exits. Sketch the camera boxes so
-every stop's framing leaves room for its card (cards alternate left/right;
+every stop's framing leaves room for its card (cards alternate left/right
+where the geometry allows: it is a preference, not a law, and a topology that
+runs to one edge of the sheet will put two neighbours on the same side rather
+than push a camera box off-sheet;
 offset the box center toward the card side by ~145 world units — and see
 MECHANICS 3 for the real internals-width budget). Plan the finale's motion
 on the same shape (a ring laps; a pipeline streams items; a tree
@@ -160,9 +163,30 @@ node ~/.claude/skills/conceptcraft/scripts/serve.mjs --root . --port <PORT> &
 S=~/.claude/skills/conceptcraft/scripts
 node $S/shoot.mjs --url http://localhost:<PORT> --out lab/shots --per-act 44
 node $S/shoot.mjs --url http://localhost:<PORT> --out lab/shots810 --height 810 --per-act 24
-node $S/shoot.mjs --url http://localhost:<PORT> --out lab/mobile --width 390 --height 844
-node $S/shoot.mjs --url http://localhost:<PORT> --out lab/reduced --reduced-motion
+node $S/shoot.mjs --url http://localhost:<PORT> --out lab/mobile --width 390 --height 844 --per-act 24
+node $S/shoot.mjs --url http://localhost:<PORT> --out lab/reduced --reduced-motion --per-act 24
 ```
+
+Run those four literally, one invocation each, and check the frame count and
+viewport in each report before believing it. Do NOT batch them through a shell
+loop over a variable: in zsh an unquoted expansion does not word-split, so the
+whole string lands in `--out` and three of the four runs silently execute at
+the DEFAULT viewport and frame count. That has already produced an "810 run"
+that ran at 900 and a "mobile run" that ran at 1440.
+
+Two helper scripts ship with the skill, because every build so far has
+otherwise written its own:
+
+```bash
+node $S/probe.mjs lab/at 1440 900 0.12 0.55 0.78
+CC_URL=http://localhost:<PORT> node $S/svgcontrast.mjs 1440 900 0.12 0.55
+```
+
+`probe.mjs` screenshots and dumps live state at EXACT act-progress values,
+which is the only way to frame a chosen stop or beat: `report.json` indexes by
+document percent and scroll y, never by act progress. `svgcontrast.mjs` (with
+`px.mjs`) measures on-screen contrast for SHEET labels, which the harness
+cannot see at all: it reads HTML cue text only.
 
 (Pick PORT by probing — any written list of taken ports goes stale;
 `lsof -ti :PORT` or just try one and step up. shoot.mjs's default desktop
@@ -172,7 +196,11 @@ contact sheets and individually read every stop's framing plus the finale
 and colophon frames — collisions live in frames, not in reports. The harness
 flags authored plateaus and JS-driven motion as "dead scroll": verify those
 windows by probing live state (viewBox, token position, counters) and
-document them as false positives. Contrast must clear 4.5:1; run BOTH
+document them as false positives. Contrast must clear 4.5:1 for every
+element that is the SUBJECT of its moment; the format deliberately holds
+rest-state names at 0.38 opacity and recesses whatever the spotlight dims, so
+those are exempt by design. Say which ones you measured rather than claiming
+the whole sheet clears. Run BOTH
 810-tall and 900-tall viewports because detail thresholds interact with
 aspect (see GOTCHAS). Reduced motion must show the complete final
 composition with cards still cycling. The harness samples ~2% steps, so

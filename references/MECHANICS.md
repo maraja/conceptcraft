@@ -75,7 +75,10 @@ blend) always drawn; a paper ring + core + name/tagline/internals/plate whose
 opacities render() drives from `f = trap(p, region.w0, region.w1)` (trapezoid,
 22% ramps). Application per frame:
 ring `f`; core `0.45+0.55f`; name `0.38+0.62f`; tagline/internals/plate
-`detail ? f : 0` where `detail = ppu >= 1.45`. Decision point and terminal
+`detail ? f : 0` where `detail = ppu >= 1.45`. The decision point obeys the same two-state
+rule as the stops: give it a rest outline and a separate live cluster rather
+than the reference's always-half-lit `0.3 + 0.7f`, which on a large instrument
+panel reads as neither state. Decision point and terminal
 are their own clusters; after the resolution moment they use
 `clamp01((p - resolveStart)/0.05)` so they light and then STAY lit through
 the close. Reduced motion: all f = 1. The screen-space spotlight (radial
@@ -84,7 +87,14 @@ lit) stacks on top of this for edge dimming.
 
 ## 6 · Plates, spotlight, halos
 All plate rects live in one `<g class="e-plates">` with group opacity 0.6 and
-solid child fills so overlapping platforms never double-darken. Halos
+solid child fills so overlapping platforms never double-darken. Build that
+group BEFORE any focus-managed cluster it sits under: SVG paints in document
+order, so a plate created later covers the internals and the instrument it was
+meant to sit behind (that bug measured 1.9:1 once). The spotlight's radial
+stops are AUTHORED, not carried over: the reference's clear radius is tuned
+for a ring whose internals hug their node, and a linear topology whose labels
+sit 150-270 world units out will land them in the dim band unless you widen
+the clear stop. Halos
 (`e-halo`) pulse stations during the finale by angular/positional proximity
 to the token.
 

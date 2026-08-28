@@ -41,6 +41,8 @@ engine/                      the scrollcraft runtime (vendored, never edited)
 scripts/scaffold.mjs         one command starts a new build
 scripts/serve.mjs            tiny static server for verification
 scripts/shoot.mjs            the screenshot/contact-sheet verification harness
+scripts/probe.mjs            screenshot + live state at exact scroll positions
+scripts/svgcontrast.mjs      on-screen contrast for SVG sheet labels (+ px.mjs)
 ```
 
 The only tooling dependency is `playwright-core` (installed per-build, used
