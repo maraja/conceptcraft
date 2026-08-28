@@ -81,7 +81,18 @@ rules line up with the baselines (set `line-height` to match the gradient
 period exactly or it drifts visibly). Margin annotations sit LEFT of the
 vertical rule in the handwriting face, rotated a degree or two, with a small
 hand-drawn arrow (inline SVG path, `stroke-linecap: round`). The sweep is a
-pencil underline: a 2px gold line with a slight skew.
+pencil underline: a 2px gold line with a slight skew, and on a flex ledger
+row an inset box-shadow instead, since a flex row has nothing inline to
+underline.
+
+Three things the first real notebook build hit immediately. **Margin notes
+have a length budget**: 18 characters anywhere, 27 only when the next step
+carries no annotation, and anything longer belongs in the tip. A longer note
+wraps past the rule height and lands on its neighbour. **Math pages need a
+ledger vessel**, not only prose steps: use `.step--row` with a fixed height
+equal to `--rule` so the row still sits on the rules. And **`card__cap` is
+uppercased, which rewrites your math** — `text-transform` turns `sigma'(z)`
+into `SIGMA'(Z)` — so wrap any symbol-bearing caption fragment in `.nocase`.
 
 **The handwriting face.** Use a real handwriting face for the annotations;
 the whole point is that a person is talking in the margin. Caveat, from
