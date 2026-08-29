@@ -112,6 +112,28 @@ builds. Violating one re-creates a failure that has already been paid for.
     should look like one. Spec and copy-paste kits: `references/MODES.md`
     and `references/modes/`.
 
+12. **Three planes, never one.** Depth is the fourth axis, after theme,
+    mode and sheet world, and it is the one the first six builds did not
+    have. The verdict that produced it: "the text overlaps and
+    there's no dimension, it just feels like everything is kind of plopped on
+    the same layer." That is one complaint, not two: the text overlapped BECAUSE
+    everything sat on one plane. Opacity cannot separate planes. A label at
+    0.38 is still a sharp label at full size competing for the same eye; a
+    grid at 0.5 is still a grid. What separates planes is focus and
+    occlusion. Every card-up frame carries three: BACKGROUND (the furniture
+    and every resting stop, washed toward the ground and thrown out of focus
+    by a backdrop blur), MIDGROUND (the aperture cut over the current
+    subject, untouched), FOREGROUND (the card and the chrome, sharp and
+    lifted). One element does all three. Mount it INSIDE `[data-sc-stage]`,
+    never on body: the stage is a stacking context, so a body-level veil
+    paints over the very cards it is meant to lift. Ramp the blur radius and
+    the wash alpha, never the element's opacity, or the sheet arrives
+    doubled. On light grounds the veil BLEACHES. And the wash must leave the
+    background legible as a ghost of itself: a background that vanishes is
+    not depth, it is an empty page. This retires the radial vignette every
+    build carried and most of the focus plate. Spec and kit:
+    `references/DEPTH.md` and `references/depth/`.
+
 ## Workflow
 
 ### 0 · Interview (short)
@@ -250,6 +272,11 @@ self-answered.
   the material, and the rules that keep them a system. Read in workflow 1.
 - `references/modes/` — copy-paste panel kits: `archive-panel.html`,
   `notebook-panel.html`, `fieldguide-panel.html`. Open any directly.
+- `references/DEPTH.md` — the three planes, the veil, the five rules, the
+  per-world wash tokens, and the five edits that wire a build. Read in
+  workflow 1, with SHEETS and MODES.
+- `references/depth/` — `depth.css` (the veil and the per-world token
+  blocks) and `depth.js` (`CCDepth.mount/box/union/at`).
 - `references/GOTCHAS.md` — the debugging table. Every row cost real time in
   the reference builds; check it FIRST when something renders wrong.
 - `references/reference-build/` — the canonical files. `index.html`+`loop.js`

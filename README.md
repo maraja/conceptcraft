@@ -39,6 +39,8 @@ references/MODES.md          the four presentation modes + how to pick one
 references/modes/            copy-paste panel kits, one per mode
 references/SHEETS.md         the five sheet worlds + the furniture switch
 references/sheets/           one token block per world, and the switch
+references/DEPTH.md          the three planes + the veil that makes them
+references/depth/            depth.css + depth.js, the compositor kit
 references/GOTCHAS.md        the debugging table (every row cost real time)
 references/reference-build/  two full reference pages (concept + worked example)
 engine/                      the scrollcraft runtime (vendored, never edited)
@@ -86,9 +88,11 @@ so read `SHEETS.md` before switching an existing build.
 
 ## Modes: the vessel matches the material
 
-A conceptcraft has two independent axes. **Theme** is colour temperature, so
-a series never looks identical. **Mode** is the information-display language,
-and it is chosen from the TYPE of material being taught:
+A conceptcraft has three independent axes, plus depth on every build.
+**Theme** is colour temperature, so a series never looks identical. **Sheet
+world** is the ground and how much furniture it carries. **Mode** is the
+information-display language, and it is chosen from the TYPE of material
+being taught:
 
 | Mode | Material | Panels look like |
 |---|---|---|
@@ -102,6 +106,28 @@ single card may borrow another mode's panel when its material calls for it.
 The engraved sheet, camera, and instrument never change. This exists because
 a history page once shipped a 1973 government report inside a syntax-coloured
 terminal well: a quotation is a document, and it should look like one.
+
+## Depth: three planes, never one
+
+Theme, mode and sheet world decide what the page is made of. Depth decides
+how far away each thing is, and every build gets it.
+
+Every card-up frame carries three planes: **background** (the furniture and
+every resting stop, washed toward the ground colour and thrown out of focus
+by a backdrop blur), **midground** (an aperture cut over the current subject,
+left untouched), and **foreground** (the card and the chrome, sharp, on a
+field that has gone quiet). One element does all three.
+
+This replaced opacity, which cannot separate planes: a label at 0.38 is still
+a sharp label at full size competing for the same eye. It also retires the
+radial vignette the format used to carry, most of the focus plate, and the
+reason builds needed hand-measured camera-pan tables to keep the drawing off
+the copy. `references/DEPTH.md` has the five rules and the per-world wash
+tokens; the two traps that cost the most are mounting the veil on `<body>`
+(the pinned stage is a stacking context, so the veil then blurs the cards it
+was meant to lift) and ramping the veil's `opacity` (a backdrop-filter
+element at opacity < 1 composites its blurred copy over the sharp original,
+and the sheet arrives doubled).
 
 ## Topologies
 

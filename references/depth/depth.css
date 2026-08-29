@@ -1,0 +1,105 @@
+/* ------------------------------------------------------------ depth veil --
+   THREE PLANES, ONE ELEMENT.
+
+   The veil is not decoration, it is the boundary between the planes:
+
+     BACKGROUND  everything painted beneath it. Washed toward the ground
+                 colour and thrown out of focus. Resting stations, their
+                 labels, the furniture. Present, unreadable, clearly behind.
+     MIDGROUND   the aperture the veil carries. The subject and its nodes,
+                 sharp and untouched, because the veil simply is not there.
+     FOREGROUND  everything above it in z-order. The card, the leader line,
+                 the HUD. Lifted, because the field beneath them is quiet.
+
+   Z-ORDER IS THE CONTRACT. backdrop-filter blurs whatever is painted below
+   it, so the stack has to be exact or the HUD blurs itself:
+
+     1   .stage-sheet        the drawing
+     11  .depth-veil         <- here
+     12  .overlay            leader line, pin halo
+     20  .card               the artifact cards
+     30  .mast .hud .stack   the chrome
+
+   THREE RULES, EACH ONE A BUG THAT SHIPPED ONCE:
+
+   1. Ramp the BLUR RADIUS and the WASH ALPHA. Never the element's own
+      `opacity`. A backdrop-filter element at opacity 0.5 composites a
+      blurred copy of the page over the unblurred original, and the whole
+      sheet arrives doubled, like badly registered print. Opacity stays 1
+      for the veil's entire life; `.is-off` removes it outright.
+   2. On a LIGHT ground the veil BLEACHES, it does not darken. The wash is
+      always the ground's own colour, pushed toward the ground. Darkening
+      paper reads as a stain; lightening slate reads as fog.
+   3. Blur a hairline grid and it becomes a soft field, which is the point.
+      Blur a 3px-stroke drawing and it becomes a smudge. Keep the blur
+      between 2.5 and 4.5 screen px; past that the background stops reading
+      as "behind" and starts reading as "broken".                          */
+
+/* MOUNTED INSIDE THE PINNED STAGE, NOT ON BODY. `.sc-stage` carries a
+   z-index, so it is a stacking context, and a body-level veil at z 11
+   paints over cards that are z 20 INSIDE that context: the copy arrives
+   blurred and bleached along with the drawing it was supposed to be lifted
+   off. The stage is 100vh and sticky, so `absolute; inset: 0` covers the
+   viewport exactly. `.d-fixed` is the fallback for a page with no stage. */
+.depth-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background: rgb(var(--d-wash) / var(--d-a, 0));
+  backdrop-filter: blur(var(--d-blur, 0px)) saturate(var(--d-sat, 1));
+  -webkit-backdrop-filter: blur(var(--d-blur, 0px)) saturate(var(--d-sat, 1));
+  /* the aperture. Clear to --d-core of the radius, then a long falloff, so
+     the subject is not sitting in a hard-edged porthole. */
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--d-rx, 240px) var(--d-ry, 180px) at var(--d-x, 50%) var(--d-y, 50%),
+    transparent 0%, transparent var(--d-core, 58%), #000 100%);
+  mask-image: radial-gradient(
+    ellipse var(--d-rx, 240px) var(--d-ry, 180px) at var(--d-x, 50%) var(--d-y, 50%),
+    transparent 0%, transparent var(--d-core, 58%), #000 100%);
+  will-change: backdrop-filter;
+}
+.depth-veil.d-fixed { position: fixed; }
+.depth-veil.is-off { display: none; }
+
+/* NO RIM. The first cut drew a hairline ellipse at the aperture's falloff,
+   on the theory that the aperture needed an edge to read as deliberate. It
+   does not: the falloff already reads, and an ellipse traced across a
+   rectilinear engraving reads as a stray oval sitting on the drawing. The
+   aperture's own soft edge is the whole indicator. */
+
+/* THE FOREGROUND LIFT. A real cast shadow with offset and blur, on cards
+   that have a panel of their own. A transparent card (clean paper,
+   editorial) gets NO shadow: a shadow under nothing reads as a rendering
+   fault, and on those worlds the veil beneath the copy is the lift. */
+.card.is-fore { box-shadow: 0 20px 44px -20px hsl(var(--sc-shadow-color) / 0.55); }
+.card { transition: box-shadow 420ms var(--sc-ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* reduced motion shows every stop at full strength at once, so there is
+     no single subject for an aperture to sit on. No veil, no lift. */
+  .depth-veil { display: none; }
+  .card.is-fore { box-shadow: none; }
+}
+
+/* ------------------------------------------------------- per-world tokens --
+   Copy ONE block into the build's :root. --d-wash is space-separated RGB
+   channels because the alpha is driven separately, per frame.             */
+
+/* BLUEPRINT (dark olive, all five furniture layers)
+:root { --d-wash: 18 22 12;  --d-a-max: 0.74; --d-blur-max: 3.5px; --d-sat: 0.75; }
+*/
+/* BARE STAGE (near-black, one strong drawing: the deepest veil of the five,
+   because there is no furniture to soften the drop)
+:root { --d-wash: 11 12 9;   --d-a-max: 0.80; --d-blur-max: 4px;   --d-sat: 0.7; }
+*/
+/* CHALKBOARD (matte slate; a shallower veil, because chalk is already low
+   contrast and a deep wash erases the background instead of receding it)
+:root { --d-wash: 20 24 20;  --d-a-max: 0.70; --d-blur-max: 3px;   --d-sat: 0.8; }
+*/
+/* CLEAN PAPER (light: BLEACH, per rule 2)
+:root { --d-wash: 244 241 232; --d-a-max: 0.82; --d-blur-max: 4px; --d-sat: 0.55; }
+*/
+/* EDITORIAL (warm paper)
+:root { --d-wash: 239 233 221; --d-a-max: 0.80; --d-blur-max: 3.5px; --d-sat: 0.6; }
+*/
