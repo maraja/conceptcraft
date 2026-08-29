@@ -142,9 +142,9 @@ DEPTH.fore(ap ? best.el : null);
 **Exempt the finale.** The live run is the page's one loud stretch and the
 subject there is the whole system, not one stop of it; an aperture would pick
 a winner among equals. Exempt any other anchor whose card is *about* the
-sheet rather than about one node: if a card is about the page's live
-instrument rather than about one node, cutting an aperture around that node
-would veil the very instrument the card is discussing.
+sheet rather than about one node. A card that reads the page's live
+instrument is the usual case: cut an aperture around one node there and you
+veil the very instrument the card is discussing.
 
 ## Verifying it
 
