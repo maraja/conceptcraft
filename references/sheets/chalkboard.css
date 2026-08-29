@@ -1,0 +1,21 @@
+/* SHEET WORLD: CHALKBOARD — matte slate, no grid, chalk-edged strokes.
+   Keeps a dark ground (projects well in a lecture hall) but drops every
+   technical layer. Pairs naturally with notebook mode.
+   SHEET = { desk:false, grid:false, gridx:false, frame:false, crop:false, ticks:false, block:false }
+   Also add the chalk filter below to the sheet's main drawing group. */
+:root {
+  --sc-canvas: #20282a;  --sc-surface: #1a2122;
+  --e-grid: transparent; --e-gridx: transparent;
+  --e-line:  rgba(238, 242, 236, 0.8);
+  --e-faint: rgba(238, 242, 236, 0.55);
+  --e-ghost: rgba(238, 242, 236, 0.34);
+  --e-ring:  rgba(238, 242, 236, 0.75);
+}
+.card { background: rgba(244, 241, 232, 0.96); color: #23241e;
+        border-radius: 3px; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4); }
+.hud { background: transparent; border: 1px dashed rgba(238, 242, 236, 0.3);
+       color: rgba(238, 242, 236, 0.72); }
+/* Labels are hand-lettered rather than engraved. Set the sheet label font
+   to your handwriting face and raise the sizes: handwriting reads smaller
+   than mono at the same px, so names 17, taglines 14. */
+.stage-sheet text.t-name, .stage-sheet text.t-plain { font-family: var(--sc-font-hand); }

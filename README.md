@@ -37,6 +37,8 @@ SKILL.md                     the format laws + workflow Claude follows
 references/MECHANICS.md      every subsystem, split MECHANICS vs AUTHORED
 references/MODES.md          the four presentation modes + how to pick one
 references/modes/            copy-paste panel kits, one per mode
+references/SHEETS.md         the five sheet worlds + the furniture switch
+references/sheets/           one token block per world, and the switch
 references/GOTCHAS.md        the debugging table (every row cost real time)
 references/reference-build/  two full reference pages (concept + worked example)
 engine/                      the scrollcraft runtime (vendored, never edited)
@@ -61,6 +63,26 @@ system it just taught — deterministically, as a pure function of scroll, with
 accumulating state and one caught failure — and what the run resolves stays
 lit through the close. Every frame of that is verified from screenshots
 before it ships.
+
+## Sheet worlds: how much of the page is furniture
+
+The reference sheet is a dark engraved plate carrying five furniture layers
+at once: a fine grid, a coarse grid, a frame, crop marks and a title block.
+None of them carries information, and inheriting all five everywhere reads
+as busy. **Furniture is opt-in**: `references/sheets/_furniture.js` replaces
+the hardcoded block with a `SHEET` config, and each world ships a token block.
+
+| World | Ground | Furniture | Best for |
+|---|---|---|---|
+| Blueprint | dark olive | all five layers | subjects that genuinely ARE instruments |
+| Clean paper | light warm | none | calm; video and print |
+| Chalkboard | matte slate | none, chalk strokes | teaching in a room |
+| Editorial | warm paper | two rules at most | pages that read as writing |
+| Bare stage | near-black | none | one strong drawing |
+
+The three axes compose: a page is a theme, a mode and a world. Going light
+inverts more than colour, and a transparent card changes the composition,
+so read `SHEETS.md` before switching an existing build.
 
 ## Modes: the vessel matches the material
 

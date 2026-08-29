@@ -1,0 +1,35 @@
+/* SHEET WORLD: EDITORIAL — warm paper, serif display, rules that mean
+   something. The page reads as writing with diagrams rather than as an
+   instrument. Pairs naturally with archive mode.
+   SHEET = { desk:false, grid:false, gridx:false, frame:false, crop:false, ticks:false, block:false }
+   Draw at most two horizontal rules, and only to mark a section. */
+:root {
+  --sc-canvas: #efe9dd;  --sc-surface: #efe9dd;
+  --sc-ink: #201e1a;     --sc-ink-soft: rgba(32, 30, 26, 0.68);
+  --e-grid: transparent; --e-gridx: transparent;
+  --e-line:  rgba(32, 30, 26, 0.8);
+  --e-faint: rgba(32, 30, 26, 0.68);
+  --e-ghost: rgba(32, 30, 26, 0.4);
+  --e-ring:  rgba(32, 30, 26, 0.7);
+  --sc-font-display: "Newsreader", Georgia, serif;
+  /* Do NOT swap --paper / --inkk: they are ROLE names used by the cards and
+     chrome, and swapping their values turns paper-on-paper text invisible.
+     Change what each role resolves to instead. */
+
+  /* All three family accents need re-cutting for line work on paper.
+     On this ground gold is 1.93:1, sage 2.29:1, clay 3.02:1 as strokes.
+     Keep the family colours only as washes UNDER dark ink. */
+  --gold-ink: #7a5f1c;   /* 4.99:1 */
+  --sage-ink: #5f6840;   /* 4.91:1 */
+  --clay-ink: #8d5a36;   /* 4.76:1 */
+}
+.card { background: transparent; color: #201e1a; border-radius: 0;
+        box-shadow: none; font-family: "Newsreader", Georgia, serif; }
+.card h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600;
+           letter-spacing: -0.01em; }
+.hud { background: transparent; border: 0; color: rgba(32, 30, 26, 0.6); }
+.mast { color: rgba(32, 30, 26, 0.78); }  /* 0.5 is 3.4:1 on small mono */
+.stage-sheet text { paint-order: stroke; stroke: rgba(239, 233, 221, 0.9);
+                    stroke-width: 0.3em; }
+/* Load Newsreader alongside the family faces:
+   ...&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400 */

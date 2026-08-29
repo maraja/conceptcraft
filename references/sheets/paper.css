@@ -1,0 +1,41 @@
+/* SHEET WORLD: CLEAN PAPER — light ground, zero furniture.
+   The calmest world and the biggest departure from the plate. Best for
+   video and print; the drawing must be panned genuinely clear of the card
+   because the card has no background to hide the lines behind.
+   SHEET = { desk:false, grid:false, gridx:false, frame:false, crop:false, ticks:false, block:false } */
+:root {
+  --sc-canvas: #f4f1e8;  --sc-surface: #f4f1e8;
+  --sc-ink: #262821;     --sc-ink-soft: rgba(38, 40, 33, 0.68);
+  --e-grid: transparent; --e-gridx: transparent;
+  --e-line:  rgba(38, 40, 33, 0.82);
+  --e-faint: rgba(38, 40, 33, 0.68);   /* 0.68 is the floor: 0.62 measures 4.38:1 */
+  --e-ghost: rgba(38, 40, 33, 0.42);
+  --e-ring:  rgba(38, 40, 33, 0.7);
+
+  /* All three family accents need re-cutting for line work on paper.
+     On this ground gold is 1.93:1, sage 2.29:1, clay 3.02:1 as strokes.
+     Keep the family colours only as washes UNDER dark ink. */
+  --gold-ink: #7a5f1c;   /* 4.99:1 */
+  --sage-ink: #5f6840;   /* 4.91:1 */
+  --clay-ink: #8d5a36;   /* 4.76:1 */
+}
+/* the sheet is already paper, so the card stops being a panel and becomes
+   a ruled column of the page */
+.card { background: transparent; color: #23241e; border-radius: 0;
+        box-shadow: none; border-left: 2px solid rgba(176, 122, 84, 0.5);
+        padding-left: 1.15rem; }
+.card--bare { border-left: 0; padding-left: 0; }
+/* chrome: hairline, never a box */
+.hud { background: transparent; border: 1px solid rgba(38, 40, 33, 0.25);
+       color: rgba(38, 40, 33, 0.72); }
+.mast { color: rgba(38, 40, 33, 0.78); }  /* 0.5 is too pale for small mono */
+/* halos invert: a LIGHT halo behind DARK type. Narrower than the dark
+   worlds' 0.32em, because at that width a light halo eats the stems of
+   11-12px mono labels and costs a full contrast point. */
+.stage-sheet text { paint-order: stroke; stroke: rgba(244, 241, 232, 0.9);
+                    stroke-width: 0.26em; }
+/* TERMINAL mode on paper: the dark code well is legitimate here and reads
+   like a documentation block set into the page. It keeps working only
+   because --paper / --inkk are NOT swapped: `.card__code` resolves its
+   ground from --inkk and its text from --paper, so swapping those role
+   names turns the well inside out. */

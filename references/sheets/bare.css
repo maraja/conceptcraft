@@ -1,0 +1,44 @@
+/* SHEET WORLD: BARE STAGE — dark ground, nothing but the drawing, the
+   card and the instrument. The most minimal: everything on screen is
+   something you deliberately drew. Unforgiving, because there is no
+   furniture to hide a weak composition behind.
+   SHEET = { desk:false, grid:false, gridx:false, frame:false, crop:false, ticks:false, block:false } */
+:root {
+  --sc-canvas: #121611;  --sc-surface: #121611;
+  --e-grid: transparent; --e-gridx: transparent;
+  --e-line:  rgba(242, 238, 228, 0.88);
+  --e-faint: rgba(207, 199, 178, 0.6);
+  --e-ghost: rgba(207, 199, 178, 0.36);
+  --e-ring:  #cfc7b2;
+}
+/* the card carries no ground either: it is type on the stage */
+.card { background: transparent; color: #f2eee4; border-radius: 0;
+        box-shadow: none; }
+.card .card__tip { border-top: 1px solid rgba(242, 238, 228, 0.18);
+                   color: rgba(242, 238, 228, 0.62); }
+.card__head, .card__cap, .card__no { color: #d2a24a; }
+/* .card__no is 0.66rem: the reference paints it clay, which breaks the
+   'clay never on small text' rule. Gold on this ground instead. */
+.hud { background: transparent; border: 0; color: rgba(242, 238, 228, 0.6); }
+.mast { color: rgba(242, 238, 228, 0.45); }
+/* With no card ground the drawing must be panned clear of the card, but
+   READ THE GEOMETRY FIRST. In the reference's 660x430 box the pan caps at
+   about 155 world units: a 660-wide box reaches 344 either side of centre
+   at 1440x900, and the widest stop cluster reaches ~178 back from its node.
+   Asking for 260 in that box clips every stop's own internals off the far
+   edge. Buying the extra room means ENLARGING the boxes (660x430 -> 660x600
+   on one build), which lowers stop ppu from ~2.09 to ~1.5 and therefore
+   moves the `detail` threshold onto a fault line: re-pick it as one named
+   constant that sits in a real gap between your wide, stop and hub
+   framings. Pan is a per-box number, and two framings may simply not take
+   the full amount. */
+/* The pan applies only ABOVE the card breakpoint (860px). Below it cards
+   centre themselves, so a pan just pushes the drawing off the edge: give
+   the phone card a scrim instead. */
+/* Two scrim tones, not one. Any dark world with a spotlight has two ground
+   luminances, and a scrim mixed to match one reads as a visible rectangle
+   over the other. Copy that can never coexist with a lit spotlight (title,
+   breath, colophon, reduced motion) takes the stage tone EXACTLY and leaves
+   no edge; chrome and phone cards that do cross vignetted ground take one
+   step darker. Feather any scrim that sits over live drawing so its fade
+   reaches zero inside the box on every side that is not a screen edge. */

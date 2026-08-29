@@ -1,0 +1,19 @@
+/* SHEET WORLD: BLUEPRINT — the original engraved instrument plate.
+   Technical, dense, at home with code and systems. It is the busiest of
+   the five: use it when the subject genuinely IS an instrument, not as
+   a default.
+   SHEET = { desk:true, grid:true, gridx:true, frame:true, crop:true, ticks:false, block:true } */
+:root {
+  --sc-canvas: #2b3122;  --sc-surface: #232919;
+  --e-grid:  rgba(242, 238, 228, 0.055);
+  --e-gridx: rgba(242, 238, 228, 0.11);
+  --e-line:  rgba(242, 238, 228, 0.85);
+  --e-faint: rgba(207, 199, 178, 0.55);
+  --e-ghost: rgba(207, 199, 178, 0.38);
+  --e-ring:  #cfc7b2;
+}
+/* cards: opaque paper panels floating on the plate */
+.card { background: #f2eee4; color: #23241e; border-radius: 2px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
+/* chrome: boxed HUD, engraved mast */
+.hud { background: rgba(20, 25, 23, 0.9); border: 1px solid rgba(200, 199, 172, 0.35); }
